@@ -10,6 +10,7 @@ class Cart
       new
     else
       new hash["items"].map { |item|
+        # p item
         CartItem.new(item["product_id"], item["quantity"])
       }
     end
