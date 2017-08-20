@@ -34,12 +34,25 @@ class OrdersController < ApplicationController
     # 2. order items <- current_cart.items
 
     # 刷卡
+    result = Braintree::Transaction.sale(
+      :amount => current_cart.total_price,
+      :payment_method_nonce => params[:payment_method_nonce],
+      :options => {
+        :submit_for_settlement => true
+      }
+    )
+
+    if result.success?
+      order.pay!
+    end
+
     # if 刷卡成功
     #   order.pay!
     # end
 
     # 通知
     # 清空購物車
+    session[:cart_9487] = nil
 
     redirect_to products_path, notice: "感謝付款！"
   end
