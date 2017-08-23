@@ -9,6 +9,7 @@ class OrdersController < ApplicationController
 
     order = Order.new
 
+    # 下面那個的醜寫法，把購買物品塞到訂單變成 OrderItem
     # items = []
     # current_cart.items.each do |item|
     #   #t.integer "product_id"
@@ -22,6 +23,7 @@ class OrdersController < ApplicationController
       order.order_items.build(product: item.product, quantity: item.quantity)
     end
 
+    # 訂單建立收件者資訊
     # order.build_recipient(params[:order][:recipient]) #strong params
     order.build_recipient(orders_params[:recipient])
     # order.recipient = Recipient.new(orders_params[:recipient]) 跟上面那行一樣
@@ -29,18 +31,26 @@ class OrdersController < ApplicationController
 
     # @order.order_items =
 
-    order.order_items.new()
+    # order.order_items.new()
     # 1. params[:order][:recipient][:name]
     # 2. order items <- current_cart.items
 
-    # 刷卡
-    result = Braintree::Transaction.sale(
-      :amount => current_cart.total_price,
-      :payment_method_nonce => params[:payment_method_nonce],
-      :options => {
-        :submit_for_settlement => true
-      }
-    )
+    # # 刷卡
+    # result = Payment::BraintreeService.new(params[:payment_method_nonce],
+    #                                        current_cart.total_price).run
+    # payment = BraintreeService.new(params[:payment_method_nonce],
+    #                                        current_cart.total_price)
+    payment = BraintreeService.new(params[:payment_method_nonce],
+                                            current_cart.total_price)
+    result = payment.run
+
+    # result = Braintree::Transaction.sale(
+    #   :amount => current_cart.total_price,
+    #   :payment_method_nonce => params[:payment_method_nonce],
+    #   :options => {
+    #     :submit_for_settlement => true
+    #   }
+    # )
 
     if result.success?
       order.pay!
